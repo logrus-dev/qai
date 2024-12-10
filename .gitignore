@@ -1,0 +1,6 @@
+dist
+build
+node_modules
+.env-cmdrc
+*.js
+.env
