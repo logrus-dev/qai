@@ -3,7 +3,7 @@ import { getAiConfig } from './config.js';
 
 type GetCompletionResult = ['filtered' | 'limited' | 'error', undefined?] | ['content', string];
 export const getCompletion = async (sysMessage: string, prompt: string, aiConfig?: string): Promise<GetCompletionResult> => {
-  const config = await getAiConfig();
+  const config = await getAiConfig(aiConfig);
   const client = new OpenAI({
     apiKey: config.key,
     baseURL: config.endpoint,

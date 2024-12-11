@@ -31,3 +31,24 @@ export const getAiConfig = async (configName: string = 'default'): Promise<AiCon
     key: process.env.OPENAI_API_KEY,
   };
 };
+
+interface TtsConfig {
+  region: string
+  key: string
+}
+export const getTtsConfig = async (configName: string = 'default'): Promise<TtsConfig> => {
+  if (vc) {
+    const { data } = await vc.kv2.read({ mountPath: 'kv', path: `azure_tts/${configName}` });
+    const config = data?.data.data as any;
+    if (!config) throw new Error(`Missing TTS config: ${configName}`);
+    return config;
+  }
+
+  if (!process.env.SPEECH_REGION || !process.env.SPEECH_KEY) {
+    throw new Error('Missing Azure TTS configuration');
+  }
+  return {
+    region: process.env.SPEECH_REGION,
+    key: process.env.SPEECH_KEY
+  };
+};

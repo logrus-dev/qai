@@ -6,6 +6,7 @@ import fastifyCookie from '@fastify/cookie';
 import fastifyView from '@fastify/view';
 import fastifyStatic from '@fastify/static';
 import { Eta } from "eta"
+import tts from './routes/tts.js';
 
 if (!process.env.STATIC_CONTENT) throw new Error('Missing STATIC_CONTENT');
 
@@ -28,6 +29,7 @@ server.register(fastifyCookie, {
   parseOptions: { },
 } as FastifyCookieOptions);
 
+server.register(tts);
 server.register(sendAiRequest);
 server.register(retrieveAiResponse);
 
