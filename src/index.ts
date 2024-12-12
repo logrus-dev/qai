@@ -10,7 +10,7 @@ import tts from './routes/tts.js';
 
 if (!process.env.STATIC_CONTENT) throw new Error('Missing STATIC_CONTENT');
 
-const server = fastify();
+const server = fastify({ logger: true });
 
 server.register(fastifyView, {
   engine: {
@@ -33,10 +33,4 @@ server.register(tts);
 server.register(sendAiRequest);
 server.register(retrieveAiResponse);
 
-server.listen({ port: 8080, host: '0.0.0.0' }, (err, address) => {
-  if (err) {
-    console.error(err)
-    process.exit(1)
-  }
-  console.log(`Server listening at ${address}`)
-});
+server.listen({ port: 8080, host: '0.0.0.0' });

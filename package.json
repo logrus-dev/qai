@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "start": "env-cmd -e dev -- node dist/index.js"
+    "start": "env-cmd -e dev -- nodemon"
   },
   "author": "",
   "license": "ISC",
@@ -28,6 +28,8 @@
     "@types/node": "^22.10.1",
     "@types/xxhashjs": "^0.2.4",
     "env-cmd": "^10.1.0",
+    "nodemon": "^3.1.7",
+    "tsx": "^4.19.2",
     "typescript": "^5.7.2"
   }
 }
