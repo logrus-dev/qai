@@ -10,7 +10,28 @@ import tts from './routes/tts.js';
 
 if (!process.env.STATIC_CONTENT) throw new Error('Missing STATIC_CONTENT');
 
-const server = fastify({ logger: true });
+const server = fastify({
+  logger: {
+    transport: {
+      targets: [
+        {
+          target: 'pino/file',
+          options: { destination: 1 }, // this writes to STDOUT
+        },
+        {
+          target: './helpers/log-ntfy.js',
+          level: 'error',
+          options: { },
+        }
+      ]
+    }
+  }
+});
+
+server.setErrorHandler(function (error, request, reply) {
+  this.log.error(error);
+  reply.status(500).send({ ok: false });
+});
 
 server.register(fastifyView, {
   engine: {

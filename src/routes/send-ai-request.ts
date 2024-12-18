@@ -39,25 +39,28 @@ const plugin: FastifyPluginAsync = async (fastify, opts) => {
 
     if (!await checkCacheEntryExists(t, promptHash) && !getJob(promptHash)) {
       shelveJob(promptHash, (async () => {
-        const [status, completion] = await getCompletion(sys_message, q, ai_config);
-        if (status === 'content') {
+        let content: string;
+        try {
+          content = await getCompletion(sys_message, q, ai_config);
           await createCacheEntry(t, {
             hash: promptHash,
             prompt: q.trim(),
-            content: completion,
+            content,
             status: 'content',
             title: `${assistant_name} | ${q.trim().substring(0, 20)}`,
           });
-        } else if (!await checkCacheErrorExists(t, promptHash)) {
-          await createCacheEntry(t, {
-            hash: promptHash,
-            prompt: q.trim(),
-            content: '<mark>Could not get completion from assistant.</mark>',
-            status: 'error',
-            title: `${assistant_name} | ${q.trim().substring(0, 20)}`,
-          });
+        } catch (er: any) {
+          request.log.error(er);
+          if (!await checkCacheErrorExists(t, promptHash)) {
+            await createCacheEntry(t, {
+              hash: promptHash,
+              prompt: q.trim(),
+              content: '<mark>Could not get completion from assistant.</mark>',
+              status: 'error',
+              title: `${assistant_name} | ${q.trim().substring(0, 20)}`,
+            });
+          }
         }
-        return status;
       })());
     }
 
