@@ -1,4 +1,4 @@
-import { createDirectus, rest, withToken, readItems, createItem, readUser, uploadFiles, updateItem } from '@directus/sdk';
+import { createDirectus, rest, withToken, readItems, createItem, readUser, uploadFiles, deleteItems } from '@directus/sdk';
 
 if (!process.env.DIRECTUS_URL) throw new Error('Missing DIRECTUS_URL');
 
@@ -59,6 +59,12 @@ export const checkCacheErrorExists = async (token: string, promptHash: string) =
 
 export const createCacheEntry = async (token: string, data: CompletionCache) => {
   await directus.request(withToken(token, createItem('qai_completion_cache', data)));
+};
+
+export const deleteCacheError = async (token: string, promptHash: string) => {
+  await directus.request(withToken(token, deleteItems('qai_completion_cache', {
+    filter: { hash: { _eq: promptHash }, status: { _eq: 'error' } },
+  })));
 };
 
 export const uploadSpeech = async (token: string, speech: ArrayBuffer) => {

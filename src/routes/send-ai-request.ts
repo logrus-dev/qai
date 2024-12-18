@@ -1,7 +1,7 @@
 import { FastifyPluginAsync, FastifySchema } from 'fastify';
 import { Static, Type } from '@sinclair/typebox';
 import { getPromptHash } from '../helpers/hashing.js';
-import { checkCacheEntryExists, checkCacheErrorExists, createCacheEntry, getAssistant, getCurrentUser } from '../services/directus.js';
+import { checkCacheEntryExists, checkCacheErrorExists, createCacheEntry, deleteCacheError, getAssistant, getCurrentUser } from '../services/directus.js';
 import { getJob, shelveJob } from '../services/jobs.js';
 import { getCompletion } from '../services/ai.js';
 
@@ -42,6 +42,7 @@ const plugin: FastifyPluginAsync = async (fastify, opts) => {
         let content: string;
         try {
           content = await getCompletion(sys_message, q, ai_config);
+          await deleteCacheError(t, promptHash);
           await createCacheEntry(t, {
             hash: promptHash,
             prompt: q.trim(),
@@ -51,15 +52,14 @@ const plugin: FastifyPluginAsync = async (fastify, opts) => {
           });
         } catch (er: any) {
           request.log.error(er);
-          if (!await checkCacheErrorExists(t, promptHash)) {
-            await createCacheEntry(t, {
-              hash: promptHash,
-              prompt: q.trim(),
-              content: '<mark>Could not get completion from assistant.</mark>',
-              status: 'error',
-              title: `${assistant_name} | ${q.trim().substring(0, 20)}`,
-            });
-          }
+          await deleteCacheError(t, promptHash);
+          await createCacheEntry(t, {
+            hash: promptHash,
+            prompt: q.trim(),
+            content: '<mark>Could not get completion from assistant.</mark>',
+            status: 'error',
+            title: `${assistant_name} | ${q.trim().substring(0, 20)}`,
+          });
         }
       })());
     }
