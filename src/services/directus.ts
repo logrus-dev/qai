@@ -1,4 +1,4 @@
-import { createDirectus, rest, withToken, readItems, createItem, readUser, uploadFiles } from '@directus/sdk';
+import { createDirectus, rest, withToken, readItems, createItem, readUser, uploadFiles, updateItem } from '@directus/sdk';
 
 if (!process.env.DIRECTUS_URL) throw new Error('Missing DIRECTUS_URL');
 
@@ -29,6 +29,7 @@ interface CompletionCache {
   prompt: string
   content: string
   title: string
+  status: 'content' | 'error'
 }
 export const getCacheEntry = async (token: string, promptHash: string): Promise<CompletionCache> => {
   const [cacheEntry] = await directus.request<CompletionCache[]>(withToken(token, readItems('qai_completion_cache', {
@@ -40,7 +41,16 @@ export const getCacheEntry = async (token: string, promptHash: string): Promise<
 
 export const checkCacheEntryExists = async (token: string, promptHash: string) => {
   const result = await directus.request(withToken(token, readItems('qai_completion_cache', {
-    filter: { hash: { _eq: promptHash } },
+    filter: { hash: { _eq: promptHash }, status: { _eq: 'content' } },
+    fields: ['id']
+  })));
+
+  return result.length > 0;
+};
+
+export const checkCacheErrorExists = async (token: string, promptHash: string) => {
+  const result = await directus.request(withToken(token, readItems('qai_completion_cache', {
+    filter: { hash: { _eq: promptHash }, status: { _eq: 'error' } },
     fields: ['id']
   })));
 

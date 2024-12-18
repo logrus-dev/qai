@@ -8,5 +8,5 @@ const prepareHashSource = (src: string) => src.replace(/\s/g, '').toLowerCase();
 
 export const getPromptHash = (userId: string, assistantId: number, prompt: string) => {
   const hashSource = `${userId}_${assistantId}_${prepareHashSource(prompt)}`;
-  return hash(hashSource);
+  return hash(hashSource).padStart(16, '0');
 };

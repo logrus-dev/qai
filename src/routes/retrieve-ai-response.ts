@@ -34,10 +34,16 @@ const plugin: FastifyPluginAsync = async (fastify, opts) => {
     }
 
     await getJob(hash);
-    const { content, prompt, title } = await getCacheEntry(t, hash);
+    const cacheEntry = await getCacheEntry(t, hash);
+    if (!cacheEntry) {
+      reply.code(404);
+      return;
+    }
+
+    const { content, prompt, title } = cacheEntry;
 
     return reply.viewAsync("completion.eta", {
-      content: micromark(content),
+      content: micromark(content, { allowDangerousHtml: true }),
       title: title,
       prompt: micromark(prompt),
     });

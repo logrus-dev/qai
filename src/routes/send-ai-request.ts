@@ -1,7 +1,7 @@
 import { FastifyPluginAsync, FastifySchema } from 'fastify';
 import { Static, Type } from '@sinclair/typebox';
 import { getPromptHash } from '../helpers/hashing.js';
-import { checkCacheEntryExists, createCacheEntry, getAssistant, getCurrentUser } from '../services/directus.js';
+import { checkCacheEntryExists, checkCacheErrorExists, createCacheEntry, getAssistant, getCurrentUser } from '../services/directus.js';
 import { getJob, shelveJob } from '../services/jobs.js';
 import { getCompletion } from '../services/ai.js';
 
@@ -45,6 +45,15 @@ const plugin: FastifyPluginAsync = async (fastify, opts) => {
             hash: promptHash,
             prompt: q.trim(),
             content: completion,
+            status: 'content',
+            title: `${assistant_name} | ${q.trim().substring(0, 20)}`,
+          });
+        } else if (!await checkCacheErrorExists(t, promptHash)) {
+          await createCacheEntry(t, {
+            hash: promptHash,
+            prompt: q.trim(),
+            content: '<mark>Could not get completion from assistant.</mark>',
+            status: 'error',
             title: `${assistant_name} | ${q.trim().substring(0, 20)}`,
           });
         }
