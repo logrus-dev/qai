@@ -34,8 +34,14 @@ const plugin: FastifyPluginAsync = async (fastify, opts) => {
     const { q, a, t } = request.query
 
     const { id: userId } = await getCurrentUser(t);
-    const { id: assistantId, sys_message, name: assistant_name, ai_config } = await getAssistant(t, a);
-    const promptHash = getPromptHash(userId, assistantId, q);
+    const {
+      id: assistantId,
+      sys_message,
+      name: assistant_name,
+      ai_config,
+      date_updated: assistantUpdatedAt,
+   } = await getAssistant(t, a);
+    const promptHash = getPromptHash(userId, assistantUpdatedAt, q);
 
     if (!await checkCacheEntryExists(t, promptHash) && !getJob(promptHash)) {
       shelveJob(promptHash, (async () => {

@@ -6,7 +6,7 @@ const hash = (source: string) => hashFn.update(source).digest().toString(16);
 
 const prepareHashSource = (src: string) => src.replace(/\s/g, '').toLowerCase();
 
-export const getPromptHash = (userId: string, assistantId: number, prompt: string) => {
-  const hashSource = `${userId}_${assistantId}_${prepareHashSource(prompt)}`;
+export const getPromptHash = (userId: string, assistantTimestamp: string, prompt: string) => {
+  const hashSource = `${userId}_${assistantTimestamp}_${prepareHashSource(prompt)}`;
   return hash(hashSource).padStart(16, '0');
 };

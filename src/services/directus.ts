@@ -14,6 +14,7 @@ interface Assistant {
   name: string
   sys_message: string
   ai_config: string
+  date_updated: string
 }
 export const getAssistant = async (token: string, code: string): Promise<Assistant> => {
   const [assistant] = await directus.request<Assistant[]>(withToken(token, readItems('qai_assistant', {
