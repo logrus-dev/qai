@@ -15,6 +15,7 @@ interface Assistant {
   sys_message: string
   ai_config: string
   date_updated: string
+  format: 'markdown' | 'html' | 'file'
 }
 export const getAssistant = async (token: string, code: string): Promise<Assistant> => {
   const [assistant] = await directus.request<Assistant[]>(withToken(token, readItems('qai_assistant', {
@@ -31,6 +32,7 @@ interface CompletionCache {
   content: string
   title: string
   status: 'content' | 'error'
+  format: 'markdown' | 'html' | 'file'
 }
 export const getCacheEntry = async (token: string, promptHash: string): Promise<CompletionCache> => {
   const [cacheEntry] = await directus.request<CompletionCache[]>(withToken(token, readItems('qai_completion_cache', {

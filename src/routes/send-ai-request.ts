@@ -41,6 +41,7 @@ const plugin: FastifyPluginAsync = async (fastify, opts) => {
       name: assistant_name,
       ai_config,
       date_updated: assistantUpdatedAt,
+      format,
    } = await getAssistant(t, a);
     const promptHash = getPromptHash(userId, assistantUpdatedAt, q);
 
@@ -56,6 +57,7 @@ const plugin: FastifyPluginAsync = async (fastify, opts) => {
             content,
             status: 'content',
             title: `${assistant_name} | ${q.trim().substring(0, 20)}`,
+            format,
           });
         } catch (er: any) {
           request.log.error(er);
@@ -66,6 +68,7 @@ const plugin: FastifyPluginAsync = async (fastify, opts) => {
             content: '<mark>Could not get completion from assistant.</mark>',
             status: 'error',
             title: `${assistant_name} | ${q.trim().substring(0, 20)}`,
+            format,
           });
         }
       })());
@@ -93,6 +96,7 @@ const plugin: FastifyPluginAsync = async (fastify, opts) => {
       name: assistant_name,
       ai_config,
       date_updated: assistantUpdatedAt,
+      format,
     } = await getAssistant(t, a);
 
     const stub = uuidv4();
@@ -110,6 +114,7 @@ const plugin: FastifyPluginAsync = async (fastify, opts) => {
             content,
             status: 'content',
             title: `${assistant_name} | File Request`,
+            format,
           });
         } catch (er: any) {
           request.log.error(er);
@@ -120,6 +125,7 @@ const plugin: FastifyPluginAsync = async (fastify, opts) => {
             content: '<mark>Could not get completion from assistant.</mark>',
             status: 'error',
             title: `${assistant_name} | File Request`,
+            format
           });
         }
       })());

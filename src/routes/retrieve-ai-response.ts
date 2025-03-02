@@ -40,13 +40,29 @@ const plugin: FastifyPluginAsync = async (fastify, opts) => {
       return;
     }
 
-    const { content, prompt, title } = cacheEntry;
+    const { content, prompt, title, format } = cacheEntry;
 
-    return reply.viewAsync("completion.eta", {
-      content: micromark(content, { allowDangerousHtml: true }),
-      title: title,
-      prompt: micromark(prompt),
-    });
+    switch (format) {
+      case 'html':
+        return reply.viewAsync("completion.eta", {
+          content,
+          title: title,
+          prompt: micromark(prompt),
+        });
+      case 'markdown':
+        return reply.viewAsync("completion.eta", {
+          content: micromark(content, { allowDangerousHtml: true }),
+          title: title,
+          prompt: micromark(prompt),
+        });
+      case 'file':
+        return reply
+        .header('Content-Disposition', `attachment; filename="${title.replace('|', '-')}"`)
+        .header('Content-Type', 'text/plain')
+        .send(content);
+      default:
+        throw new Error(`Format is not supported: ${format}.`);
+    }
   })
 }
 
