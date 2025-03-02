@@ -56,10 +56,11 @@ const plugin: FastifyPluginAsync = async (fastify, opts) => {
           prompt: micromark(prompt),
         });
       case 'file':
+        const { file_name_with_extension, file_content } = JSON.parse(content);
         return reply
-        .header('Content-Disposition', `attachment; filename="${title.replace('|', '-')}"`)
+        .header('Content-Disposition', `attachment; filename="${file_name_with_extension}"`)
         .header('Content-Type', 'text/plain')
-        .send(content);
+        .send(file_content);
       default:
         throw new Error(`Format is not supported: ${format}.`);
     }

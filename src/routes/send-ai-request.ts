@@ -102,34 +102,32 @@ const plugin: FastifyPluginAsync = async (fastify, opts) => {
     const stub = uuidv4();
     const promptHash = getPromptHash(userId, assistantUpdatedAt, stub);
 
-    if (!await checkCacheEntryExists(t, promptHash) && !getJob(promptHash)) {
-      shelveJob(promptHash, (async () => {
-        let content: string;
-        try {
-          content = await getCompletion(sys_message, q, ai_config);
-          await deleteCacheError(t, promptHash);
-          await createCacheEntry(t, {
-            hash: promptHash,
-            prompt: stub,
-            content,
-            status: 'content',
-            title: `${assistant_name} | File Request`,
-            format,
-          });
-        } catch (er: any) {
-          request.log.error(er);
-          await deleteCacheError(t, promptHash);
-          await createCacheEntry(t, {
-            hash: promptHash,
-            prompt: stub,
-            content: '<mark>Could not get completion from assistant.</mark>',
-            status: 'error',
-            title: `${assistant_name} | File Request`,
-            format
-          });
-        }
-      })());
-    }
+    shelveJob(promptHash, (async () => {
+      let content: string;
+      try {
+        content = await getCompletion(sys_message, q, ai_config, format === 'file' ? 'file' : undefined);
+        await deleteCacheError(t, promptHash);
+        await createCacheEntry(t, {
+          hash: promptHash,
+          prompt: stub,
+          content,
+          status: 'content',
+          title: `${assistant_name} | File Request`,
+          format,
+        });
+      } catch (er: any) {
+        request.log.error(er);
+        await deleteCacheError(t, promptHash);
+        await createCacheEntry(t, {
+          hash: promptHash,
+          prompt: stub,
+          content: '<mark>Could not get completion from assistant.</mark>',
+          status: 'error',
+          title: `${assistant_name} | File Request`,
+          format
+        });
+      }
+    })());
 
     const expires = new Date();
     expires.setDate(expires.getDate() + 365);
