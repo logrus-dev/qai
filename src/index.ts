@@ -6,6 +6,7 @@ import fastifyCookie from '@fastify/cookie';
 import fastifyView from '@fastify/view';
 import fastifyStatic from '@fastify/static';
 import { Eta } from "eta"
+import multipart from '@fastify/multipart';
 import tts from './routes/tts.js';
 
 if (!process.env.STATIC_CONTENT) throw new Error('Missing STATIC_CONTENT');
@@ -49,6 +50,8 @@ server.register(fastifyCookie, {
   secret: process.env.COOKIE_SECRET,
   parseOptions: { },
 } as FastifyCookieOptions);
+
+server.register(multipart);
 
 server.register(tts);
 server.register(sendAiRequest);
