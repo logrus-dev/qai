@@ -27,20 +27,27 @@ interface RequestBody {
 }
 
 function isFile(request: FieldInfo): request is FileFieldInfo {
-  return request.type === 'file';
+  return  typeof request === 'string' ? false : request.type === 'file';
 }
 
-function isField(request: FieldInfo): request is TextFieldInfo {
-  return request.type === 'field';
+function isField(request: FieldInfo | string): request is TextFieldInfo {
+  return typeof request === 'string' ? false : request.type === 'field';
+}
+
+function isString(request: FieldInfo | string): request is string {
+  return typeof request === 'string';
 }
 
 interface Body {
-  a: FieldInfo
-  t: FieldInfo
-  q: FieldInfo
+  a: FieldInfo | string
+  t: FieldInfo | string
+  q: FieldInfo | string
 }
 
-const getString = (field: FieldInfo) => {
+const getString = (field: FieldInfo | string) => {
+  if (isString(field)) {
+    return field;
+  }
   if (!isField(field)) {
     throw new Error('Field is not a string');
   }
@@ -51,7 +58,10 @@ const getString = (field: FieldInfo) => {
   return field.value
 };
 
-const getFile = async (field: FieldInfo): Promise<string | FileInfo> => {
+const getFile = async (field: FieldInfo | string): Promise<string | FileInfo> => {
+  if (isString(field)) {
+    return field;
+  }
   if (isField(field)) {
     return getString(field);
   }

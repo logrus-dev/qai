@@ -7,6 +7,7 @@ import fastifyView from '@fastify/view';
 import fastifyStatic from '@fastify/static';
 import { Eta } from "eta"
 import multipart from '@fastify/multipart';
+import formbody from '@fastify/formbody';
 import tts from './routes/tts.js';
 
 if (!process.env.STATIC_CONTENT) throw new Error('Missing STATIC_CONTENT');
@@ -47,6 +48,7 @@ server.register(fastifyStatic, {
 });
 
 server.register(multipart, { attachFieldsToBody: true });
+server.register(formbody);
 
 server.register(tts);
 server.register(sendAiRequest);
