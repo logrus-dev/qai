@@ -1,12 +1,19 @@
-import xxhashjs from 'xxhashjs';
-const { h64 } = xxhashjs;
+import {
+  createHmac,
+} from 'node:crypto';
+import { getQaiConfig } from '../services/config.js';
 
-const hashFn = h64(0xABCD);
-const hash = (source: string) => hashFn.update(source).digest().toString(16);
+const getHmac = async () => {
+  const qaiConfig = await getQaiConfig();
+  return createHmac('sha256', qaiConfig.sign_key);
+};
 
 const prepareHashSource = (src: string) => src.replace(/\s/g, '').toLowerCase();
 
-export const getPromptHash = (userId: string, assistantTimestamp: string, prompt: string) => {
-  const hashSource = `${userId}_${assistantTimestamp}_${prepareHashSource(prompt)}`;
-  return hash(hashSource).padStart(16, '0');
+export const getPromptHash = async (userId: string, assistantTimestamp: string, prompt: string) => {
+  const hmac = await getHmac();
+
+  hmac.update(`${userId}_${assistantTimestamp}_${prepareHashSource(prompt)}`);
+
+  return hmac.digest('hex');
 };

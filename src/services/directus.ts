@@ -34,19 +34,19 @@ interface CompletionCache {
   status: 'content' | 'error'
   format: 'markdown' | 'html' | 'file'
 }
-export const getCacheEntry = async (token: string, promptHash: string): Promise<CompletionCache> => {
-  const [cacheEntry] = await directus.request<CompletionCache[]>(withToken(token, readItems('qai_completion_cache', {
+export const getCacheEntry = async (promptHash: string): Promise<CompletionCache> => {
+  const [cacheEntry] = await directus.request<CompletionCache[]>(readItems('qai_completion_cache', {
     filter: { hash: { _eq: promptHash } }
-  })));
+  }));
 
   return cacheEntry;
 };
 
-export const checkCacheEntryExists = async (token: string, promptHash: string) => {
-  const result = await directus.request(withToken(token, readItems('qai_completion_cache', {
+export const checkCacheEntryExists = async (promptHash: string) => {
+  const result = await directus.request(readItems('qai_completion_cache', {
     filter: { hash: { _eq: promptHash }, status: { _eq: 'content' } },
     fields: ['id']
-  })));
+  }));
 
   return result.length > 0;
 };

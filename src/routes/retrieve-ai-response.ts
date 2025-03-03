@@ -5,7 +5,7 @@ import { getJob } from '../services/jobs.js';
 import {micromark} from 'micromark';
 
 const Params = Type.Object({
-  hash: Type.String({ minLength: 16, maxLength: 16, }),
+  hash: Type.String({ minLength: 64, maxLength: 64, }),
 })
 
 type ParamsType = Static<typeof Params>
@@ -27,14 +27,9 @@ const plugin: FastifyPluginAsync = async (fastify, opts) => {
     Params: ParamsType
   }>('/:hash', { schema } , async (request, reply) => {
     const { hash } = request.params;
-    const { t } = request.cookies;
-    if (!t) {
-      reply.code(403);
-      return;
-    }
 
     await getJob(hash);
-    const cacheEntry = await getCacheEntry(t, hash);
+    const cacheEntry = await getCacheEntry(hash);
     if (!cacheEntry) {
       reply.code(404);
       return;
@@ -58,9 +53,9 @@ const plugin: FastifyPluginAsync = async (fastify, opts) => {
       case 'file':
         const { file_name_with_extension, file_content } = JSON.parse(content);
         return reply
-        .header('Content-Disposition', `attachment; filename="${file_name_with_extension}"`)
-        .header('Content-Type', 'text/plain')
-        .send(file_content);
+          .header('Content-Disposition', `attachment; filename="${file_name_with_extension}"`)
+          .header('Content-Type', 'text/plain')
+          .send(file_content);
       default:
         throw new Error(`Format is not supported: ${format}.`);
     }

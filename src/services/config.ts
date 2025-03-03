@@ -52,3 +52,24 @@ export const getTtsConfig = async (configName: string = 'default'): Promise<TtsC
     key: process.env.SPEECH_KEY
   };
 };
+
+interface QaiConfig {
+  sign_key: string
+}
+export const getQaiConfig = async (): Promise<QaiConfig> => {
+  if (vc) {
+    const { data } = await vc.kv2.read({ mountPath: 'kv', path: 'qai' });
+    const config = data?.data.data as any;
+    if (!config) throw new Error('Missing QAI config');
+
+    return config;
+  }
+
+  if (!process.env.QAI_SIGN_KEY) {
+    throw new Error('Missing QAI configuration');
+  }
+
+  return {
+    sign_key: process.env.QAI_SIGN_KEY,
+  };
+};

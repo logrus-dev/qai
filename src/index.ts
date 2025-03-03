@@ -46,12 +46,7 @@ server.register(fastifyStatic, {
   prefix: '/static/',
 });
 
-server.register(fastifyCookie, {
-  secret: process.env.COOKIE_SECRET,
-  parseOptions: { },
-} as FastifyCookieOptions);
-
-server.register(multipart);
+server.register(multipart, { attachFieldsToBody: true });
 
 server.register(tts);
 server.register(sendAiRequest);

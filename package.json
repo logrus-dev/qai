@@ -22,8 +22,7 @@
     "fastify": "^5.1.0",
     "micromark": "^4.0.1",
     "openai": "^4.76.0",
-    "uuid": "^11.1.0",
-    "xxhashjs": "^0.2.2"
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
     "@tsconfig/node23": "^23.0.0",

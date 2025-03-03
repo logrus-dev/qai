@@ -1,6 +1,7 @@
 import OpenAI from 'openai';
 import { getAiConfig } from './config.js';
 import { ChatCompletionCreateParamsNonStreaming } from 'openai/resources/index.mjs';
+import { FileInfo } from '../helpers/file-info.js';
 
 const schemas = {
   file: {
@@ -21,7 +22,7 @@ const schemas = {
   }
 };
 
-export const getCompletion = async (sysMessage: string, prompt: string | Blob, aiConfig?: string, schema?: keyof typeof schemas): Promise<string> => {
+export const getCompletion = async (sysMessage: string, prompt: string | FileInfo, aiConfig?: string, schema?: keyof typeof schemas): Promise<string> => {
   const config = await getAiConfig(aiConfig);
   const client = new OpenAI({
     apiKey: config.key,
@@ -34,21 +35,16 @@ export const getCompletion = async (sysMessage: string, prompt: string | Blob, a
     { role: 'system', content: sysMessage }
   ];
 
-  if (prompt instanceof Blob) {
-    // Convert Blob to base64-encoded string
-    const buffer = await prompt.arrayBuffer();
-    const base64Image = Buffer.from(buffer).toString('base64');
-    const mimeType = prompt.type || 'application/octet-stream';
-
+  if (typeof prompt === 'string') {
+    messages.push({ role: 'user', content: prompt });
+  } else {
     messages.push({
       role: 'user',
       content: [
         { type: 'text', text: 'Please analyze the following image:' },
-        { type: 'image_url', image_url: { url: `data:${mimeType};base64,${base64Image}` } }
+        { type: 'image_url', image_url: { url: `data:${prompt.mimeType};base64,${prompt.contentBase64}` } }
       ]
     });
-  } else {
-    messages.push({ role: 'user', content: prompt });
   }
 
   const request: ChatCompletionCreateParamsNonStreaming = schema
