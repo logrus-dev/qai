@@ -42,6 +42,7 @@ interface Body {
   a: FieldInfo | string
   t: FieldInfo | string
   q: FieldInfo | string
+  f: FieldInfo
 }
 
 const getString = (field: FieldInfo | string) => {
@@ -49,24 +50,15 @@ const getString = (field: FieldInfo | string) => {
     return field;
   }
   if (!isField(field)) {
-    throw new Error('Field is not a string');
-  }
-  if (!field.value) {
-    throw new Error('Field is missing value');
+    return undefined;
   }
 
   return field.value
 };
 
-const getFile = async (field: FieldInfo | string): Promise<string | FileInfo> => {
-  if (isString(field)) {
-    return field;
-  }
-  if (isField(field)) {
-    return getString(field);
-  }
+const getFile = async (field: FieldInfo): Promise<FileInfo | undefined> => {
   if (!isFile(field)) {
-    throw new Error('Invalid field type');
+    return undefined;
   }
 
   const buffer = await field.toBuffer();
@@ -79,8 +71,13 @@ const getFile = async (field: FieldInfo | string): Promise<string | FileInfo> =>
 const plugin: FastifyPluginAsync = async (fastify, opts) => {
   fastify.post<{ Body: Body }>('/', {  }, async (request, reply) => {
     const t = getString(request.body.t);
+    if (!t) return reply.status(403);
+
     const a = getString(request.body.a);
-    const q = await getFile(request.body.q);
+    if (!a) return reply.status(400);
+
+    const prompt = getString(request.body.q);
+    const file = await getFile(request.body.f);
 
     const { id: userId } = await getCurrentUser(t);
     const {
@@ -92,19 +89,18 @@ const plugin: FastifyPluginAsync = async (fastify, opts) => {
       format,
     } = await getAssistant(t, a);
 
-    const prompt = typeof q === 'string' ? q : '(File Input)';
-    const title = `${assistant_name} | ${prompt.trim().substring(0, 20)}`;
-    const promptHash = await getPromptHash(userId, assistantUpdatedAt, typeof q === 'string' ? q : q.contentBase64);
+    const title = `${assistant_name} | ${prompt?.trim().substring(0, 20)}`;
+    const promptHash = await getPromptHash(userId, assistantUpdatedAt, file?.contentBase64 ?? prompt ?? uuidv4());
 
     if (!await checkCacheEntryExists(promptHash) && !getJob(promptHash)) {
       shelveJob(promptHash, (async () => {
         let content: string;
         try {
-          content = await getCompletion(sys_message, q, ai_config, format === 'file' ? 'file' : undefined);
+          content = await getCompletion(sys_message, prompt, file, ai_config, format === 'file' ? 'file' : undefined);
           await deleteCacheError(t, promptHash);
           await createCacheEntry(t, {
             hash: promptHash,
-            prompt,
+            prompt: prompt ?? '(no textual prompt were provided)',
             content,
             status: 'content',
             title,
@@ -115,7 +111,7 @@ const plugin: FastifyPluginAsync = async (fastify, opts) => {
           await deleteCacheError(t, promptHash);
           await createCacheEntry(t, {
             hash: promptHash,
-            prompt,
+            prompt: prompt ?? '(no textual prompt were provided)',
             content: '<mark>Could not get completion from assistant.</mark>',
             status: 'error',
             title,

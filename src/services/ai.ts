@@ -22,7 +22,7 @@ const schemas = {
   }
 };
 
-export const getCompletion = async (sysMessage: string, prompt: string | FileInfo, aiConfig?: string, schema?: keyof typeof schemas): Promise<string> => {
+export const getCompletion = async (sysMessage: string, prompt?: string, file?: FileInfo, aiConfig?: string, schema?: keyof typeof schemas): Promise<string> => {
   const config = await getAiConfig(aiConfig);
   const client = new OpenAI({
     apiKey: config.key,
@@ -35,14 +35,14 @@ export const getCompletion = async (sysMessage: string, prompt: string | FileInf
     { role: 'system', content: sysMessage }
   ];
 
-  if (typeof prompt === 'string') {
+  if (prompt) {
     messages.push({ role: 'user', content: prompt });
-  } else {
+  }
+  if (file) {
     messages.push({
       role: 'user',
       content: [
-        { type: 'text', text: 'Please analyze the following image:' },
-        { type: 'image_url', image_url: { url: `data:${prompt.mimeType};base64,${prompt.contentBase64}` } }
+        { type: 'image_url', image_url: { url: `data:${file.mimeType};base64,${file.contentBase64}` } }
       ]
     });
   }
