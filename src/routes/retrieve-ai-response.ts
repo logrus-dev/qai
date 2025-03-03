@@ -53,7 +53,7 @@ const plugin: FastifyPluginAsync = async (fastify, opts) => {
       case 'file':
         const { file_name_with_extension, file_content } = JSON.parse(content);
         return reply
-          .header('Content-Disposition', `attachment; filename="${file_name_with_extension}"`)
+          .header('Content-Disposition', `attachment; filename="${encodeURIComponent(file_name_with_extension)}"`)
           .header('Content-Type', 'text/plain')
           .send(file_content);
       default:
