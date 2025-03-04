@@ -47,7 +47,18 @@ server.register(fastifyStatic, {
   prefix: '/static/',
 });
 
-server.register(multipart, { attachFieldsToBody: true });
+server.register(multipart, {
+  attachFieldsToBody: true,
+  limits: {
+    fieldNameSize: 100, // Max field name size in bytes
+    fieldSize: 1000,     // Max field value size in bytes
+    fields: 10,         // Max number of non-file fields
+    fileSize: 5000000,  // For multipart forms, the max file size in bytes
+    files: 1,           // Max number of file fields
+    headerPairs: 5000,  // Max number of header key=>value pairs
+    parts: 5000         // For multipart forms, the max number of parts (fields + files)
+  }
+});
 server.register(formbody);
 
 server.register(tts);

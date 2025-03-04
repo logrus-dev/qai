@@ -26,8 +26,8 @@ interface RequestBody {
   toBuffer?: () => Promise<Buffer>
 }
 
-function isFile(request: FieldInfo): request is FileFieldInfo {
-  return  typeof request === 'string' ? false : request.type === 'file';
+function isFile(request: FieldInfo | undefined): request is FileFieldInfo {
+  return request !== undefined && typeof request !== 'string' && request.type === 'file';
 }
 
 function isField(request: FieldInfo | string): request is TextFieldInfo {
@@ -42,7 +42,7 @@ interface Body {
   a: FieldInfo | string
   t: FieldInfo | string
   q: FieldInfo | string
-  f: FieldInfo
+  f: FieldInfo | undefined
 }
 
 const getString = (field: FieldInfo | string) => {
@@ -56,7 +56,7 @@ const getString = (field: FieldInfo | string) => {
   return field.value
 };
 
-const getFile = async (field: FieldInfo): Promise<FileInfo | undefined> => {
+const getFile = async (field: FieldInfo | undefined): Promise<FileInfo | undefined> => {
   if (!isFile(field)) {
     return undefined;
   }
